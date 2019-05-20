@@ -22,10 +22,11 @@ export function * watchPublish() {
                 yield put(actions.ServerFeedback.handleServerFeedback(feedback));
 
                 const documentNode = yield select(selectors.CR.Nodes.documentNodeSelector);
+                const separatorArray = ['?node=', '@', ';language='];
                 const documentUri = decodeURIComponent($get('uri', documentNode));
-                const documentUriFragment = documentUri.split('@')[0];
-                const previewUrl = documentUriFragment + '@' + targetWorkspaceName;
-
+                const re = new RegExp(separatorArray.map(curr => curr.replace('?', '\\?')).join('|'), 'g');
+                const [url, query, workspace, language] = documentUri.split(re);
+                const previewUrl = url + separatorArray[0] + encodeURIComponent(query + separatorArray[1] + targetWorkspaceName + separatorArray[2] + language);
                 yield put(actions.UI.ContentCanvas.setPreviewUrl(previewUrl));
             } catch (error) {
                 console.error('Failed to publish', error);
